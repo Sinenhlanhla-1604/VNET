@@ -1,0 +1,116 @@
+{
+    "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
+    "contentVersion": "1.0.0.0",
+    "parameters": {},
+    "functions": [
+    ],
+    "variables": {},
+    "resources": [
+            {
+        "name": "VNET_01 Public IP",
+        "type": "Microsoft.Network/publicIPAddresses",
+        "apiVersion": "2020-11-01",
+        "location": "[resourceGroup().location]",
+        "tags": {
+            "displayName": "VNET_01 Public IP"
+        },
+        "properties": {
+            "publicIPAllocationMethod": "Dynamic",
+            "dnsSettings": {
+                "domainNameLabel": "dnsname1"
+            }
+        }
+     },
+
+            {
+        "name": "VNET_02 Public IP",
+        "type": "Microsoft.Network/publicIPAddresses",
+        "apiVersion": "2020-11-01",
+        "location": "[resourceGroup().location]",
+        "tags": {
+            "displayName": "VNET_02 Public IP"
+        },
+        "properties": {
+            "publicIPAllocationMethod": "Dynamic",
+            "dnsSettings": {
+                "domainNameLabel": "dnsname1"
+            }
+        }
+     },
+        {
+        "name": "VNET_01",
+        "type": "Microsoft.Network/virtualNetworks",
+        "apiVersion": "2020-11-01",
+        "location": "[resourceGroup().location]",
+        "tags": {
+            "displayName": "VNET_01"
+        },
+        "properties": {
+            "addressSpace": {
+                "addressPrefixes": [
+                    "10.0.0.0/16"
+                ]
+            },
+            "subnets": [
+                {
+                    "name": "Jumpbox Subnet",
+                    "properties": {
+                        "addressPrefix": "10.0.1.0/24"
+                    }
+                },
+                {
+                    "name": "Workload Subnet",
+                    "properties": {
+                        "addressPrefix": "10.0.2.0/24"
+                    }
+                },
+
+                {
+                    "name": "Gateway Subnet",
+                    "properties": {
+                        "addressPrefix": "10.0.0.0/28"
+                    }
+                }
+            ]
+        }
+     },
+       {
+        "name": "virtualNetworkGateway1",
+        "type": "Microsoft.Network/virtualNetworkGateways",
+        "apiVersion": "2020-11-01",
+        "location": "[resourceGroup().location]",
+        "dependsOn": [
+            "[resourceId('Microsoft.Network/publicIPAddresses', 'publicIPAddress1')]",
+            "[resourceId('Microsoft.Network/virtualNetworks', 'virtualNetwork1')]"
+        ],
+        "properties": {
+            "ipConfigurations": [
+                {
+                    "name": "vnetGatewayConfig",
+                    "properties": {
+                        "privateIPAllocationMethod": "Dynamic",
+                        "subnet": {
+                            "id": "[resourceId('Microsoft.Network/virtualNetworks/subnets', 'virtualNetwork1', 'subnet1')]"
+                        },
+                        "publicIPAddress": {
+                            "id": "[resourceId('Microsoft.Network/publicIPAddresses', 'publicIPAddress1')]"
+                        }
+                    }
+                }
+            ],
+            "sku": {
+                "name": "Basic",
+                "tier": "Basic"
+            },
+            "gatewayType": "Vpn",
+            "vpnType": "PolicyBased",
+            "enableBgp": true
+        }
+       }
+ 
+
+     
+        
+    ],
+    "outputs": {}
+}
